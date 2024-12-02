@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrics Guessing Game</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>Lyrical.ly</h1>
+        <div id="song-selection">
+            <label for="song">Choose a song:</label>
+            <select id="song">
+                {% for song in songs %}
+                    <option value="{{ song.id }}">{{ song.title }} by {{ song.artist }}</option>
+                {% endfor %}
+            </select>
+            <button id="start-game">Start Game</button>
+        </div>
+        <div id="lyrics-display" style="display:none;">
+            <p id="lyrics"></p>
+            <input type="text" id="guess" placeholder="Enter your guess here">
+            <button id="submit-guess">Submit Guess</button>
+            <p id="feedback"></p>
+        </div>
+    </div>
+    <script>
+        document.getElementById('start-game').addEventListener('click', function() {
+            // Fetch lyrics for the selected song
+            const songId = document.getElementById('song').value;
+            fetch(`/api/lyrics/${songId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('lyrics').textContent = data.lyrics;
+                    document.getElementById('lyrics-display').style.display = 'block';
+                });
+        });
+        document.getElementById('submit-guess').addEventListener('click', function() {
+            const guess = document.getElementById('guess').value;
+            // Submit the guess to the server
+            fetch('/api/submit-guess', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ guess: guess }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('feedback').textContent = data.feedback;
+            });
+        });
+    </script>
+</body>
+</html>
